@@ -58,6 +58,7 @@ impl Chat for ChatService {
             while let Ok(msg) = rx.recv().await {
                 if let Err(_) = sender.send(Ok(msg)) {
                     warn!("Failed to send. Sender might be closed.");
+                    return;
                 }
             }
         });
@@ -76,7 +77,7 @@ impl Default for ChatService {
 
 pub async fn start() {
     let svc = ChatServer::with_interceptor(ChatService::default(), check_auth);
-    let addr = "0.0.0.0:8080".parse().unwrap();
+    let addr = "0.0.0.0:8081".parse().unwrap();
     info!("listening on http://{}", addr);
     Server::builder()
         .add_service(svc)

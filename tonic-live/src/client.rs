@@ -9,6 +9,7 @@ use tonic::{
     codegen::InterceptedService, metadata::AsciiMetadataValue, service::Interceptor,
     transport::Channel, Result,
 };
+use tracing::info;
 
 lazy_static! {
     static ref TOKEN: ArcSwap<Token> = ArcSwap::from(Arc::new(Token {
@@ -43,7 +44,7 @@ impl Rooms {
 
 impl Client {
     pub async fn new(username: impl Into<String>) -> Self {
-        let channel = Channel::from_static("http://127.0.0.1:8080")
+        let channel = Channel::from_static("http://127.0.0.1:8081")
             .connect()
             .await
             .unwrap();
@@ -79,6 +80,7 @@ impl Client {
         let rooms = self.rooms.clone();
         tokio::spawn(async move {
             while let Some(msg) = stream.message().await? {
+                info!("got message: {:?}", msg);
                 rooms.insert_message(msg);
             }
             Ok::<_, tonic::Status>(())
